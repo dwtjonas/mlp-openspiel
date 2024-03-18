@@ -1,3 +1,4 @@
+# First attempt at Q-learning in OpenSpiel (doesn’t work yet)
 import pyspiel
 from open_spiel.python import rl_environment
 from open_spiel.python.algorithms import tabular_qlearner
