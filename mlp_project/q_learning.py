@@ -91,3 +91,19 @@ learner0_strategy, learner1_strategy = nashqlearner0.step(
 
 print(learner0_strategy)
 print(learner1_strategy)"""
+
+for i in range(1000):
+    time_step = env.reset()  
+    actions = [None, None]
+    actions = [
+        agents[0].step(time_step, actions).action,
+        agents[1].step(time_step, actions).action
+    ]
+    time_step = env.step(actions)
+    agents[0].step(time_step, actions)
+    agents[1].step(time_step, actions)
+
+
+    time_step = env.reset()
+strategies = [agents[0].step(time_step, actions, is_evaluation=False).probs, agents[1].step(time_step, actions, is_evaluation=False).probs]
+print(strategies)
