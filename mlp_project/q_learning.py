@@ -7,6 +7,7 @@ from open_spiel.python.algorithms import tabular_multiagent_qlearner
 from open_spiel.python.egt import dynamics
 from open_spiel.python.egt import utils
 from open_spiel.python.egt import visualization
+from open_spiel.python.algorithms.tabular_qlearner import QLearner
 from open_spiel.python.algorithms.tabular_multiagent_qlearner import CorrelatedEqSolver, MultiagentQLearner, StackelbergEqSolver, TwoPlayerNashSolver, valuedict
 from open_spiel.python.egt.utils import game_payoffs_array
 import matplotlib.pyplot as plt
@@ -21,8 +22,7 @@ print("This file has been changed")
 game = pyspiel.load_game("matrix_bos")
 state = game.new_initial_state()
 env = rl_environment.Environment("matrix_bos")
-num_players = env.num_players
-num_actions = env.action_spec()["num_actions"]
+
 
 nashqlearner0 = MultiagentQLearner(0, 2,
                                     [env.game.num_distinct_actions()] * 2,
@@ -42,7 +42,7 @@ for i in range(250):
     time_step = env.reset()
     actions = [None, None]
 
-    learner0_strategy, learner1_strategy = (
+    '''learner0_strategy, learner1_strategy = (
         nashqlearner0.step(time_step, actions, is_evaluation=True).probs, 
         nashqlearner1.step(time_step, actions, is_evaluation=True).probs
     )
@@ -51,7 +51,7 @@ for i in range(250):
     if i % 50 == 0:
         print("Iteration:", i)
         print(learner0_strategy)
-        print(learner1_strategy)
+        print(learner1_strategy)'''
     actions = [
         nashqlearner0.step(time_step, actions).action,
         nashqlearner1.step(time_step, actions).action

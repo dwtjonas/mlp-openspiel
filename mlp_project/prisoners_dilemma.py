@@ -33,7 +33,7 @@ ax.quiver(dyn)
 
 alpha = 0.01
 for x in x_list:
-    for i in range(10000):
+    for i in range(1000):
         x += alpha * dyn(x)
         ax.scatter(x[0], x[2], color='red', linestyle='dashed', linewidth=0.1)
 
