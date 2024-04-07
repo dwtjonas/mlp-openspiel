@@ -1,7 +1,7 @@
 from absl.testing import absltest
 import numpy as np
 
-from open_spiel.python import rl_environment
+from open_spiel.python import rl_environment, rl_tools
 from open_spiel.python.algorithms.tabular_multiagent_qlearner import CorrelatedEqSolver
 from open_spiel.python.algorithms.tabular_multiagent_qlearner import MultiagentQLearner
 from open_spiel.python.algorithms.tabular_multiagent_qlearner import StackelbergEqSolver
@@ -23,11 +23,11 @@ import numpy as np
 game = pyspiel.create_matrix_game([[0, -0.05, 0.25], [0.05, 0, -0.5], [-0.25, 0.5, 0]], [[0, 0.05, -0.25], [-0.05, 0, 0.5], [0.25, -0.5, 0]])
 env = rl_environment.Environment(game)
 nashqlearner0 = MultiagentQLearner(0, 2,
-                                    [env.game.num_distinct_actions()] * 2, step_size=0.001,
+                                    [env.game.num_distinct_actions()] * 2, step_size=0.001,epsilon_schedule=rl_tools.ConstantSchedule(1),
                                     joint_action_solver=TwoPlayerNashSolver())
 
 nashqlearner1 = MultiagentQLearner(1, 2,
-                                    [env.game.num_distinct_actions()] * 2, step_size=0.001,
+                                    [env.game.num_distinct_actions()] * 2, step_size=0.001,epsilon_schedule=rl_tools.ConstantSchedule(1),
                                     joint_action_solver=TwoPlayerNashSolver())
 
 

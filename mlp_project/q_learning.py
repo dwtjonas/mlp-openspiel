@@ -26,11 +26,11 @@ env = rl_environment.Environment("matrix_bos")
 
 nashqlearner0 = MultiagentQLearner(0, 2,
                                     [env.game.num_distinct_actions()] * 2,
-                                    TwoPlayerNashSolver(), epsilon_schedule=rl_tools.LinearSchedule(1, 0.1, 250))
+                                    TwoPlayerNashSolver(), epsilon_schedule=rl_tools.ConstantSchedule(1))
 
 nashqlearner1 = MultiagentQLearner(1, 2,
                                     [env.game.num_distinct_actions()] * 2,
-                                    TwoPlayerNashSolver(), epsilon_schedule=rl_tools.LinearSchedule(1, 0.1, 250))
+                                    TwoPlayerNashSolver(), epsilon_schedule=rl_tools.ConstantSchedule(1))
 
 payoff_tensor = utils.game_payoffs_array(game)
 print(payoff_tensor)    
@@ -41,6 +41,11 @@ ax.quiver(dyn)
 for i in range(250):
     time_step = env.reset()
     actions = [None, None]
+
+    probs1 = nashqlearner0.step(time_step, actions, is_evaluation=True).probs
+    probs2 = nashqlearner1.step(time_step, actions, is_evaluation=True).probs
+    print(probs1)
+    print(probs2)
 
     '''learner0_strategy, learner1_strategy = (
         nashqlearner0.step(time_step, actions, is_evaluation=True).probs, 
