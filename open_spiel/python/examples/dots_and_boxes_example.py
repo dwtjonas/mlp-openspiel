@@ -26,6 +26,9 @@ from open_spiel.python.bots import human
 from open_spiel.python.bots import uniform_random
 import pyspiel
 
+# added
+from open_spiel.python.algorithms import minimax
+
 FLAGS = flags.FLAGS
 
 flags.DEFINE_integer("seed", 12761381, "The seed to use for the RNG.")
@@ -64,6 +67,17 @@ def main(_):
   # Print the initial state
   print("INITIAL STATE")
   print(str(state))
+  if ((1) in state.legal_actions()):
+    print(True)
+  print(extract_dimensions(game_string))
+  print('all the actions that are needed to close a single box')
+  print((findActionsForBox(extract_dimensions(game_string)[0],extract_dimensions(game_string)[1])))
+  print('actions that can close a single box')
+  print(find_unique_numbers(findActionsForBox(2,2),state.legal_actions())) 
+  print('actions that give the opponet a box')
+  print(find_actions_give_opponent_box(findActionsForBox(2,2),state.legal_actions())) 
+  print('actions that are already excecuted')
+  print(taken_actions(init_actions(2,2),state.legal_actions()))
 
   while not state.is_terminal():
     current_player = state.current_player()
@@ -83,6 +97,12 @@ def main(_):
     print("")
     print("NEXT STATE:")
     print(str(state))
+    print('actions that can close a single box')
+    print(find_unique_numbers(findActionsForBox(2,2),state.legal_actions())) 
+    print('actions that give the opponet a box')
+    print(find_actions_give_opponent_box(findActionsForBox(2,2),state.legal_actions())) 
+    print('actions that are already excecuted')
+    print(taken_actions(init_actions(2,2),state.legal_actions()))
     if not state.is_terminal():
       print(str(state.observation_tensor()))
 
@@ -90,6 +110,74 @@ def main(_):
   returns = state.returns()
   for pid in range(game.num_players()):
     print("Utility for player {} is {}".format(pid, returns[pid]))
+
+# extract the information of the dimensions of a game
+def extract_dimensions(game_string):
+  return [int(game_string.split("=")[1][0]),int(game_string.split("=")[2][0])]
+
+# given information about the field, return a tuple containing a list of all the number actions that close in a box.
+def findActionsForBox(row, column):
+    box_actions = []
+    for i in range(row):
+        for j in range(column):
+            box_action = [
+                i * column + j,
+                i * column + j + column,
+                i * column + j + (column*(row+1)) + i,
+                i * column + j + (column*(row+1)) + i + 1
+            ]
+            box_actions.append(box_action)
+    return tuple(box_actions)
+
+# find the actions that can close in a box
+# given al the actions that belongs to each other to close in a single box and all the available actions
+def find_unique_numbers(box_actions,actions):
+   subresult = []
+   result = []
+   for sublist in box_actions:
+        for num in sublist:
+            if ((num) in actions):
+                subresult.append(num)
+        if (len(subresult) == 1):
+            result.append(subresult[0])
+        subresult = []
+   return result
+
+# find the actions that if you draw it. It is the third line of a box and give basically a box to the opponent
+# given al the actions that belongs to each other to close in a single box and all the available actions
+def find_actions_give_opponent_box(box_actions,actions):
+  subresult = []
+  result = []
+  for sublist in box_actions:
+    for num in sublist:
+      if ((num) in actions):
+        subresult.append(num)
+    if (len(subresult) == 2):
+      result.append(subresult[0])
+      result.append(subresult[1])
+    subresult = []
+  return result
+
+# return wich all the possible actions in the beginning of the game
+def init_actions(row,column):
+  amount = row * (column + 1) + (row + 1) * column   # amount of actions at the start of the game
+  return [i for i in range(amount)]
+
+# return wich actions are not possible anymore. This can be used to detect chains.
+def taken_actions(init_actions,actions):
+  result = []
+  for number in init_actions:
+    if (number  not in actions):
+      result.append(number)
+  return result
+
+# return the first initilal vetical line
+def get_init_vertical_action(row,column):
+   return (row + 1) * column
+   
+# return the coordinates(in form of a box) of a line
+def get_coordinates_box(box_actions,action):
+   return
 
 
 if __name__ == "__main__":
