@@ -1,7 +1,6 @@
 import random
 import pyspiel
-import dotsandboxes_agent
-import minimax_template
+
 
 
 states_dict = {}
