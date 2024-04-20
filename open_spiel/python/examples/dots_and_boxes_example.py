@@ -78,6 +78,9 @@ def main(_):
   print(find_actions_give_opponent_box(findActionsForBox(2,2),state.legal_actions())) 
   print('actions that are already excecuted')
   print(taken_actions(init_actions(2,2),state.legal_actions()))
+  print('should print all the actions to full in a half open chain')
+  print(get_half_open_chains(findActionsForBox(2,2),state.legal_actions()))
+
 
   while not state.is_terminal():
     current_player = state.current_player()
@@ -103,6 +106,9 @@ def main(_):
     print(find_actions_give_opponent_box(findActionsForBox(2,2),state.legal_actions())) 
     print('actions that are already excecuted')
     print(taken_actions(init_actions(2,2),state.legal_actions()))
+    print('should print all the actions to full in a half open chain')
+    print(get_half_open_chains(findActionsForBox(2,2),state.legal_actions()))
+
     if not state.is_terminal():
       print(str(state.observation_tensor()))
 
@@ -178,6 +184,50 @@ def get_init_vertical_action(row,column):
 # return the coordinates(in form of a box) of a line
 def get_coordinates_box(box_actions,action):
    return
+
+def get_boxes_from_action(box_actions,number_action):
+  result = []
+  for box in box_actions:
+    if number_action in box:
+      result.append(box)
+  return result
+
+def get_half_open_chains(box_actions,actions):
+   result = []
+   subresult = []
+   copy_actions = actions
+   for action_close_box in find_unique_numbers(box_actions,actions):
+      if (action_close_box not in copy_actions): # element can be removed by a chain that is not a solution
+          copy_actions.append(action_close_box)
+      copy_actions.remove(action_close_box)
+      subresult.append(action_close_box)
+      boxes = get_boxes_from_action(box_actions,action_close_box)
+      while (len(boxes) == 2):
+         flag = False
+         subcount = 0
+         for box in boxes:
+            for element in box:
+               if (element in copy_actions):
+                   subcount += 1
+            if (subcount == 1):
+                for element in box:
+                   if (element in copy_actions):
+                      copy_actions.remove(element)
+                      subresult.append(element)
+                      boxes = get_boxes_from_action(box_actions,element)
+                      flag = True
+            if (subcount == 2 or subcount == 3):
+                if (len(subresult) > 2):
+                    result.append(subresult)
+                    boxes = []
+            subcount = 0 # reset
+         if (not flag):
+             boxes = [] # er wordt geen resultaat gevonden
+      if (len(boxes) == 1 and len(subresult) > 2):
+         result.append(subresult)
+      subresult = []
+   return result
+
 
 
 if __name__ == "__main__":
