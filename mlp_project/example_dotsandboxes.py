@@ -3,7 +3,14 @@ import pyspiel
 
 
 
-states_dict = {}
+def sign(n):
+    if n > 0:
+        return 1
+    elif n == 0:
+        return 0
+    else:
+        return -1
+    
 
 def get_agent_for_tournament(player_id):
     """Change this function to initialize your agent.
@@ -17,7 +24,7 @@ def get_agent_for_tournament(player_id):
     return my_player
 
 
-def _minimax(state, maximizing_player_id):
+def _minimax(state, maximizing_player_id, states_dict):
     """
     Implements a min-max algorithm
 
@@ -31,12 +38,12 @@ def _minimax(state, maximizing_player_id):
     """
 
     if state.is_terminal():
+        states_dict[state.dbn_string()] = (-1,sign(state.player_return(maximizing_player_id)))
        
-        return (-1,state.player_return(maximizing_player_id))
+        return states_dict[state.dbn_string()]
     
     if state.dbn_string() in states_dict.keys():
      
-      
         return states_dict[state.dbn_string()]
 
     player = state.current_player()
@@ -46,14 +53,16 @@ def _minimax(state, maximizing_player_id):
         selection = min
     
     action_dict = {}
-    print("Legal actions inside minimax: ")
-    print(state.legal_actions())
+    #print("Legal actions inside minimax: ")
+    #print(state.legal_actions())
     for action in state.legal_actions():
-        (_,winner) = _minimax(state.child(action), maximizing_player_id)
+        (_,winner) = _minimax(state.child(action), maximizing_player_id, states_dict)
         action_dict[action] = winner 
 
+    print(action_dict)
     
     best_action = selection(action_dict, key=action_dict.get)
+    print("Best action: " + str(best_action))
     states_dict[state.dbn_string()] = (best_action, action_dict[best_action])
     return states_dict[state.dbn_string()]
 
@@ -97,9 +106,10 @@ def minimax_search(game,
         state = game.new_initial_state()
     if maximizing_player_id is None:
         maximizing_player_id = state.current_player()
+    states_dict = {}
     v = _minimax(
         state.clone(),
-        maximizing_player_id=maximizing_player_id)
+        maximizing_player_id=maximizing_player_id, states_dict=states_dict)
     return v
 
 
@@ -148,12 +158,12 @@ class Agent(pyspiel.Bot):
         print(legal_actions)
         #rand_idx = random.randint(0, len(legal_actions) - 1)
         #action = legal_actions[rand_idx]
-        action = minimax_search(game, state,self.player_id)[0]
+        action = minimax_search(game, state, self.player_id)[0]
         print("Test: " + str(action))
         return action
 
 
-num_rows, num_cols = 2, 2  # Number of squares
+num_rows, num_cols = 2,2  # Number of squares
 game_string = (f"dots_and_boxes(num_rows={num_rows},num_cols={num_cols},"
                 "utility_margin=true)")
 game = pyspiel.load_game(game_string)
@@ -259,7 +269,8 @@ print(f"Initial state:")
 print(state)
 while not state.is_terminal():
     current_player = state.current_player()
-    legal_actions = state.legal_actions()
+    
+    '''legal_actions = state.legal_actions()
     #rand_idx = random.randint(0, len(legal_actions) - 1)
     #action = legal_actions[rand_idx]
     action = bots[current_player].step(state)
@@ -267,7 +278,29 @@ while not state.is_terminal():
     #action = current_player
     state.apply_action(int(action))
     print(f"Player{current_player+1}:")
-    print(state)
+    print(state)'''
+    
+    if current_player == 1:
+        legal_actions = state.legal_actions()
+        print(legal_actions)
+        action = int(input())
+        print("Action: " + str(action))
+        #action = current_player
+        state.apply_action(int(action))
+        print(f"Player{current_player+1}:")
+        print(state)
+
+
+    else:
+        legal_actions = state.legal_actions()
+        #rand_idx = random.randint(0, len(legal_actions) - 1)
+        #action = legal_actions[rand_idx]
+        action = bots[current_player].step(state)
+        print("Action: " + str(action))
+        #action = current_player
+        state.apply_action(int(action))
+        print(f"Player{current_player+1}:")
+        print(state)
 returns = state.returns()
 print(f"Player return values: {returns}")
 
