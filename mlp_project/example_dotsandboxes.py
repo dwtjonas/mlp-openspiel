@@ -1,7 +1,38 @@
 import random
 import pyspiel
 
+states_dict = {}
 
+
+
+'''num_rows, num_cols = 2, 2  # Number of squares
+game_string = (f"dots_and_boxes(num_rows={num_rows},num_cols={num_cols},"
+                "utility_margin=true)")
+game = pyspiel.load_game(game_string)
+state = game.new_initial_state()
+print(f"Initial state:")
+print(state)
+while not state.is_terminal():
+    current_player = state.current_player()
+    legal_actions = state.legal_actions()
+    rand_idx = random.randint(0, len(legal_actions) - 1)
+    action = legal_actions[rand_idx]
+    state.apply_action(action)
+    print(f"Player{current_player+1}:")
+
+    print(state)
+    print(state.returns())
+    print(state.player_reward(0))
+    print("Information string: " + state.information_state_string())
+    #print("Information tensor: " + state.information_state_tensor())
+    print("Is player node: " + str(state.is_player_node()))
+    print("Observation string: " + state.observation_string())
+    print("Observation string: " + state.observation_tensor())
+    print("Player return : " + state.player_return(0))
+
+    x = input()
+returns = state.returns()
+print(f"Player return values: {returns}")'''
 
 def sign(n):
     if n > 0:
@@ -10,7 +41,17 @@ def sign(n):
         return 0
     else:
         return -1
-    
+
+
+def get_current_score(observation_string):
+    score_for_one = 0
+    score_for_two = 0
+    for c in observation_string:
+        if c == '1':
+            score_for_one += 1
+        elif c == '2':
+            score_for_two += 1
+    return score_for_one, score_for_two
 
 def get_agent_for_tournament(player_id):
     """Change this function to initialize your agent.
@@ -24,7 +65,7 @@ def get_agent_for_tournament(player_id):
     return my_player
 
 
-def _minimax(state, maximizing_player_id, states_dict):
+def _minimax(state, maximizing_player_id):
     """
     Implements a min-max algorithm
 
@@ -36,15 +77,23 @@ def _minimax(state, maximizing_player_id, states_dict):
     Returns:
       The optimal value of the sub-game starting in state
     """
-
-    if state.is_terminal():
-        states_dict[state.dbn_string()] = (-1,sign(state.player_return(maximizing_player_id)))
-       
-        return states_dict[state.dbn_string()]
+    #state_key = state.dbn_string() + str(state.returns()[0])
+    current_score1, current_score2 = get_current_score(state.__str__())
+    state_key = state.dbn_string() + str(current_score1) + str(current_score2)
+    print("State key: " + state_key)
     
-    if state.dbn_string() in states_dict.keys():
+    print(state_key)
+    if state.is_terminal():
+
+        states_dict[state_key] = (-1,state.player_return(maximizing_player_id))
+       
+        return states_dict[state_key]
+    
+    if state_key in states_dict.keys():
+        print("This is the best choice here: ")
+        print(states_dict[state_key])
      
-        return states_dict[state.dbn_string()]
+        return states_dict[state_key]
 
     player = state.current_player()
     if player == maximizing_player_id:
@@ -56,15 +105,15 @@ def _minimax(state, maximizing_player_id, states_dict):
     #print("Legal actions inside minimax: ")
     #print(state.legal_actions())
     for action in state.legal_actions():
-        (_,winner) = _minimax(state.child(action), maximizing_player_id, states_dict)
+        (_,winner) = _minimax(state.child(action), maximizing_player_id)
         action_dict[action] = winner 
 
-    print(action_dict)
+   
     
     best_action = selection(action_dict, key=action_dict.get)
-    print("Best action: " + str(best_action))
-    states_dict[state.dbn_string()] = (best_action, action_dict[best_action])
-    return states_dict[state.dbn_string()]
+    
+    states_dict[state_key] = (best_action, action_dict[best_action])
+    return states_dict[state_key]
 
 
 def minimax_search(game,
@@ -106,10 +155,13 @@ def minimax_search(game,
         state = game.new_initial_state()
     if maximizing_player_id is None:
         maximizing_player_id = state.current_player()
-    states_dict = {}
+
+
+    
+    
     v = _minimax(
         state.clone(),
-        maximizing_player_id=maximizing_player_id, states_dict=states_dict)
+        maximizing_player_id=maximizing_player_id)
     return v
 
 
