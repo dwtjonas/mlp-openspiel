@@ -67,21 +67,24 @@ def main(_):
   # Print the initial state
   print("INITIAL STATE")
   print(str(state))
-  if ((1) in state.legal_actions()):
-    print(True)
+  row = extract_dimensions(game_string)[0]
+  column = extract_dimensions(game_string)[1]
   print(extract_dimensions(game_string))
   print('all the actions that are needed to close a single box')
-  print((findActionsForBox(extract_dimensions(game_string)[0],extract_dimensions(game_string)[1])))
+  print((findActionsForBox(row,column)))
   print('actions that can close a single box')
-  print(find_unique_numbers(findActionsForBox(2,2),state.legal_actions())) 
+  print(find_unique_numbers(findActionsForBox(row,column),state.legal_actions()))
   print('actions that give the opponet a box')
-  print(find_actions_give_opponent_box(findActionsForBox(2,2),state.legal_actions())) 
+  print(find_actions_give_opponent_box(findActionsForBox(row,column),state.legal_actions()))
   print('actions that are already excecuted')
-  print(taken_actions(init_actions(2,2),state.legal_actions()))
+  print(taken_actions(init_actions(row,column),state.legal_actions()))
   print('should print all the actions to full in a half open chain')
-  print(get_half_open_chains(findActionsForBox(2,2),state.legal_actions()))
+  print(get_half_open_chains(findActionsForBox(row,column),state.legal_actions()))
+  #print('should print all the actions to full in a closed chain')
+  #print(get_closed_chains(findActionsForBox(row,column),state.legal_actions()))
   print('should print all the symmetries of the current state')
-  print(symmetries(taken_actions(init_actions(2,2),state.legal_actions()),2,2))
+  print(symmetries(taken_actions(init_actions(row,column),state.legal_actions()),row,column))
+
 
 
   while not state.is_terminal():
@@ -103,15 +106,18 @@ def main(_):
     print("NEXT STATE:")
     print(str(state))
     print('actions that can close a single box')
-    print(find_unique_numbers(findActionsForBox(2,2),state.legal_actions())) 
+    print(find_unique_numbers(findActionsForBox(row,column),state.legal_actions()))
     print('actions that give the opponet a box')
-    print(find_actions_give_opponent_box(findActionsForBox(2,2),state.legal_actions())) 
+    print(find_actions_give_opponent_box(findActionsForBox(row,column),state.legal_actions()))
     print('actions that are already excecuted')
-    print(taken_actions(init_actions(2,2),state.legal_actions()))
+    print(taken_actions(init_actions(row,column),state.legal_actions()))
     print('should print all the actions to full in a half open chain')
-    print(get_half_open_chains(findActionsForBox(2,2),state.legal_actions()))
+    print(get_half_open_chains(findActionsForBox(row,column),state.legal_actions()))
+    #print('should print all the actions to full in a closed chain')
+    #print(get_closed_chains(findActionsForBox(row,column),state.legal_actions()))
     print('should print all the symmetries of the current state')
-    print(symmetries(taken_actions(init_actions(2,2),state.legal_actions()),2,2))
+    print(symmetries(taken_actions(init_actions(row,column),state.legal_actions()),row,column))
+
 
     if not state.is_terminal():
       print(str(state.observation_tensor()))
