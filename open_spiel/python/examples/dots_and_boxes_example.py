@@ -80,6 +80,8 @@ def main(_):
   print(taken_actions(init_actions(2,2),state.legal_actions()))
   print('should print all the actions to full in a half open chain')
   print(get_half_open_chains(findActionsForBox(2,2),state.legal_actions()))
+  print('should print all the symmetries of the current state')
+  print(symmetries(taken_actions(init_actions(2,2),state.legal_actions()),2,2))
 
 
   while not state.is_terminal():
@@ -108,6 +110,8 @@ def main(_):
     print(taken_actions(init_actions(2,2),state.legal_actions()))
     print('should print all the actions to full in a half open chain')
     print(get_half_open_chains(findActionsForBox(2,2),state.legal_actions()))
+    print('should print all the symmetries of the current state')
+    print(symmetries(taken_actions(init_actions(2,2),state.legal_actions()),2,2))
 
     if not state.is_terminal():
       print(str(state.observation_tensor()))
@@ -228,6 +232,82 @@ def get_half_open_chains(box_actions,actions):
       subresult = []
    return result
 
+# task 3 point 2 symmetries
+
+# output example ['h', 3, 1]
+def givePositionLine(actionNumber,rowNumber,columnNumber):
+    nb_hlines = (rowNumber + 1) * columnNumber
+    if actionNumber < nb_hlines:
+        row = actionNumber // columnNumber
+        col = actionNumber % columnNumber
+        return ['h',row,col]
+    else:
+        action2 = actionNumber - nb_hlines
+        row = action2 // (columnNumber + 1)
+        col = action2 % (columnNumber + 1)
+        return ['v',row,col]
+
+# output example is een innteger of the action
+def giveActionLine(actionInfo, row_number, column_number):
+    nb_hlines = (row_number + 1) * column_number
+    direction, row, col = actionInfo
+    if direction == 'h':
+        action_number = row * column_number + col
+    else:
+        action_number = nb_hlines + row * (column_number + 1) + col
+    return action_number
+
+# output example [[['h', 0, 0], ['h', 2, 2], ['h', 0, 2]], [['h', 2, 2], ['h', 0, 0], ['h', 2, 0]]]
+def equivalent_actions(actions, row_number, column_number):
+    result = []
+    subresult = []
+    for action in actions:
+        direction, row, col = action
+        # horizontal mirroring
+        if direction == 'h':
+            subresult.append([direction, row_number - row, col])
+        else:
+            subresult.append([direction, row_number - row - 1, col])
+    result.append(subresult)
+    subresult = []
+    for action in actions:
+        direction, row, col = action
+        # Vertical mirroring
+        if direction == 'h':
+            subresult.append([direction, row, column_number - col - 1])
+        else:
+            subresult.append([direction, row, column_number - col])
+    result.append(subresult)
+    subresult = []
+    for action in actions:
+        direction, row, col = action
+        # first horizontal mirroring, then vertical mirroring or vice versa
+        if direction == 'h':
+            subresult.append([direction, row_number - row, column_number - col - 1])
+        else:
+            subresult.append([direction, row_number - row - 1, column_number - col])
+    result.append(subresult)
+    return result
+
+# output for example is [0, 2, 6]
+def convertToActionNumbers(actionInfos,rowNumber,columnNumber):
+    result = []
+    subresult = []
+    for element in actionInfos:
+        for actionInfo in element:
+            subresult.append(giveActionLine(actionInfo, rowNumber, columnNumber))
+        subresult.sort()
+        result.append(subresult)
+        subresult = []
+    return result
+
+def symmetries(actionNumbers,rowNumber,columnNumber):
+    result = []
+    actionInfoList = []
+    for actionNumber in actionNumbers:
+        actionInfoList.append(givePositionLine(actionNumber,rowNumber,columnNumber))
+    result = equivalent_actions(actionInfoList,rowNumber,columnNumber)
+    return convertToActionNumbers(result,rowNumber,columnNumber)
 
 
 if __name__ == "__main__":
