@@ -263,7 +263,6 @@ def giveActionLine(actionInfo, row_number, column_number):
         action_number = nb_hlines + row * (column_number + 1) + col
     return action_number
 
-# output example [[['h', 0, 0], ['h', 2, 2], ['h', 0, 2]], [['h', 2, 2], ['h', 0, 0], ['h', 2, 0]]]
 def equivalent_actions(actions, row_number, column_number):
     result = []
     subresult = []
@@ -293,6 +292,43 @@ def equivalent_actions(actions, row_number, column_number):
         else:
             subresult.append([direction, row_number - row - 1, column_number - col])
     result.append(subresult)
+    subresult = []
+    if row_number == column_number:
+        for action in actions:
+            direction, row, col = action
+            # first horizontal mirroring, then vertical mirroring or vice versa
+            if direction == 'h':
+                subresult.append(['v', col, row])
+            else:
+                subresult.append(['h', col, row])
+        result.append(subresult)
+        subresult = []
+        for action in actions:
+            direction, row, col = action
+            # first horizontal mirroring, then vertical mirroring or vice versa
+            if direction == 'h':
+                subresult.append(['v', row_number - col - 1, row])
+            else:
+                subresult.append(['h', row_number - col, row])
+        result.append(subresult)
+        subresult = []
+        for action in actions:
+            direction, row, col = action
+            # first horizontal mirroring, then vertical mirroring or vice versa
+            if direction == 'h':
+                subresult.append(['v', col, column_number - row])
+            else:
+                subresult.append(['h', col, column_number - row - 1])
+        result.append(subresult)
+        subresult = []
+        for action in actions:
+            direction, row, col = action
+            # first horizontal mirroring, then vertical mirroring or vice versa
+            if direction == 'h':
+                subresult.append(['v', row_number - col - 1, column_number - row])
+            else:
+                subresult.append(['h', row_number - col, column_number - row - 1])
+        result.append(subresult)
     return result
 
 # output for example is [0, 2, 6]
