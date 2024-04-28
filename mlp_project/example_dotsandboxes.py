@@ -80,9 +80,9 @@ def _minimax(state, maximizing_player_id):
     #state_key = state.dbn_string() + str(state.returns()[0])
     current_score1, current_score2 = get_current_score(state.__str__())
     state_key = state.dbn_string() + str(current_score1) + str(current_score2)
-    print("State key: " + state_key)
+ 
     
-    print(state_key)
+
     if state.is_terminal():
 
         states_dict[state_key] = (-1,state.player_return(maximizing_player_id))
@@ -90,8 +90,7 @@ def _minimax(state, maximizing_player_id):
         return states_dict[state_key]
     
     if state_key in states_dict.keys():
-        print("This is the best choice here: ")
-        print(states_dict[state_key])
+    
      
         return states_dict[state_key]
 
@@ -215,7 +214,7 @@ class Agent(pyspiel.Bot):
         return action
 
 
-num_rows, num_cols = 2,2  # Number of squares
+num_rows, num_cols = 2,3  # Number of squares
 game_string = (f"dots_and_boxes(num_rows={num_rows},num_cols={num_cols},"
                 "utility_margin=true)")
 game = pyspiel.load_game(game_string)
@@ -322,7 +321,7 @@ print(state)
 while not state.is_terminal():
     current_player = state.current_player()
     
-    '''legal_actions = state.legal_actions()
+    legal_actions = state.legal_actions()
     #rand_idx = random.randint(0, len(legal_actions) - 1)
     #action = legal_actions[rand_idx]
     action = bots[current_player].step(state)
@@ -330,9 +329,9 @@ while not state.is_terminal():
     #action = current_player
     state.apply_action(int(action))
     print(f"Player{current_player+1}:")
-    print(state)'''
+    print(state)
     
-    if current_player == 1:
+    '''if current_player == 1:
         legal_actions = state.legal_actions()
         print(legal_actions)
         action = int(input())
@@ -352,7 +351,7 @@ while not state.is_terminal():
         #action = current_player
         state.apply_action(int(action))
         print(f"Player{current_player+1}:")
-        print(state)
+        print(state)'''
 returns = state.returns()
 print(f"Player return values: {returns}")
 

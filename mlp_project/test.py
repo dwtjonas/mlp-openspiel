@@ -55,8 +55,8 @@ for i in range(1000):
     actions = [None, None]
     probs1 = nashqlearner0.step(time_step, actions, is_evaluation=True).probs
     probs2 = nashqlearner1.step(time_step, actions, is_evaluation=True).probs
-    #print(probs1)
-    #print(probs2)
+    print(probs1)
+    print(probs2)
 
     
     ax.scatter([(probs1[0], 
@@ -70,8 +70,8 @@ for i in range(1000):
     nashqlearner0.step(time_step, actions)
     nashqlearner1.step(time_step, actions)
 
-    info_state = str(time_step.observations["info_state"])
-    print(info_state)
+    #info_state = str(time_step.observations["info_state"])
+    #print(info_state)
 
 
 plt.show()
