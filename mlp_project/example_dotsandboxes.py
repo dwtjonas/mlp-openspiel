@@ -1,7 +1,10 @@
 import random
 import pyspiel
-
+import dots_and_boxes_example as dab
+import time
+import numpy as np
 states_dict = {}
+num_rows, num_cols = 2,3  # Number of squares
 
 
 
@@ -64,6 +67,17 @@ def get_agent_for_tournament(player_id):
     my_player = Agent(player_id)
     return my_player
 
+def _minimax_action(state, maximizing_player_id):
+    player = state.current_player()
+    if player == 0:
+        selection = max
+    else:
+        selection = min
+    action_dict = {}
+    for action in state.legal_actions():
+        action_dict[action] = _minimax(state.child(action), maximizing_player_id) 
+    best_action = selection(action_dict, key=action_dict.get)
+    return best_action
 
 def _minimax(state, maximizing_player_id):
     """
@@ -77,21 +91,25 @@ def _minimax(state, maximizing_player_id):
     Returns:
       The optimal value of the sub-game starting in state
     """
-    #state_key = state.dbn_string() + str(state.returns()[0])
     current_score1, current_score2 = get_current_score(state.__str__())
     state_key = state.dbn_string() + str(current_score1) + str(current_score2)
+<<<<<<< HEAD
  
     
 
     if state.is_terminal():
+=======
+>>>>>>> c0e29fb6d600ec1862260215a7300cea755378c2
 
-        states_dict[state_key] = (-1,state.player_return(maximizing_player_id))
-       
-        return states_dict[state_key]
-    
+    if state.is_terminal():
+        return state.player_return(maximizing_player_id)
+
     if state_key in states_dict.keys():
+<<<<<<< HEAD
     
      
+=======
+>>>>>>> c0e29fb6d600ec1862260215a7300cea755378c2
         return states_dict[state_key]
 
     player = state.current_player()
@@ -99,21 +117,16 @@ def _minimax(state, maximizing_player_id):
         selection = max
     else:
         selection = min
-    
-    action_dict = {}
-    #print("Legal actions inside minimax: ")
-    #print(state.legal_actions())
-    for action in state.legal_actions():
-        (_,winner) = _minimax(state.child(action), maximizing_player_id)
-        action_dict[action] = winner 
+    values_children = [_minimax(state.child(action), maximizing_player_id) for action in state.legal_actions()]
+    best_val = selection(values_children)
+    #states_dict[state_key] = best_val
 
-   
-    
-    best_action = selection(action_dict, key=action_dict.get)
-    
-    states_dict[state_key] = (best_action, action_dict[best_action])
-    return states_dict[state_key]
+    for state_key in get_symmetrical_states(state_key): 
+        states_dict[state_key] = best_val
+    print(len(states_dict))
 
+
+    return best_val
 
 def minimax_search(game,
                    state=None,
@@ -155,17 +168,10 @@ def minimax_search(game,
     if maximizing_player_id is None:
         maximizing_player_id = state.current_player()
 
-
-    
-    
-    v = _minimax(
+    action = _minimax_action(
         state.clone(),
         maximizing_player_id=maximizing_player_id)
-    return v
-
-
-
-
+    return action
 
 class Agent(pyspiel.Bot):
     """Agent template"""
@@ -209,12 +215,20 @@ class Agent(pyspiel.Bot):
         print(legal_actions)
         #rand_idx = random.randint(0, len(legal_actions) - 1)
         #action = legal_actions[rand_idx]
-        action = minimax_search(game, state, self.player_id)[0]
+
+        tic = time.perf_counter()
+        action = minimax_search(game, state, self.player_id)
+        toc = time.perf_counter()
+        print(f"Minimax in {toc - tic:0.4f} seconds")
         print("Test: " + str(action))
+
         return action
 
 
+<<<<<<< HEAD
 num_rows, num_cols = 2,3  # Number of squares
+=======
+>>>>>>> c0e29fb6d600ec1862260215a7300cea755378c2
 game_string = (f"dots_and_boxes(num_rows={num_rows},num_cols={num_cols},"
                 "utility_margin=true)")
 game = pyspiel.load_game(game_string)
@@ -289,7 +303,17 @@ def get_observation_state(obs_tensor, row, col, part, as_str=True):
         is_state = num2state(is_state)
     return is_state
 
+def get_symmetrical_states(state_key):
+    actions = [action for action, i in enumerate(state_key[:-2]) if i == '1']
+    sym_actions = dab.symmetries(actions, num_rows, num_cols)
+    sym_actions.append(actions)
 
+    states = [state_key]
+    for actions in sym_actions:
+        sym_state_dbn = ''.join('1' if i in actions else '0' for i in range(len(state_key[:-2])))
+        sym_state_key = sym_state_dbn + state_key[-2:]
+        states.append(sym_state_key)    
+    return states
 
 '''state = game.new_initial_state()
 state_strs, obs_tensors = [], []
@@ -320,7 +344,11 @@ print(f"Initial state:")
 print(state)
 while not state.is_terminal():
     current_player = state.current_player()
+<<<<<<< HEAD
     
+=======
+    '''
+>>>>>>> c0e29fb6d600ec1862260215a7300cea755378c2
     legal_actions = state.legal_actions()
     #rand_idx = random.randint(0, len(legal_actions) - 1)
     #action = legal_actions[rand_idx]
@@ -342,6 +370,7 @@ while not state.is_terminal():
         print(state)
 
 
+<<<<<<< HEAD
     else:
         legal_actions = state.legal_actions()
         #rand_idx = random.randint(0, len(legal_actions) - 1)
@@ -352,6 +381,18 @@ while not state.is_terminal():
         state.apply_action(int(action))
         print(f"Player{current_player+1}:")
         print(state)'''
+=======
+    else:'''
+    legal_actions = state.legal_actions()
+    #rand_idx = random.randint(0, len(legal_actions) - 1)
+    #action = legal_actions[rand_idx]
+    action = bots[current_player].step(state)
+    print("Action: " + str(action))
+    #action = current_player
+    state.apply_action(int(action))
+    print(f"Player{current_player+1}:")
+    print(state)
+>>>>>>> c0e29fb6d600ec1862260215a7300cea755378c2
 returns = state.returns()
 print(f"Player return values: {returns}")
 

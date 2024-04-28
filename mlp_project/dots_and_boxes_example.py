@@ -263,6 +263,8 @@ def giveActionLine(actionInfo, row_number, column_number):
         action_number = nb_hlines + row * (column_number + 1) + col
     return action_number
 
+
+
 def equivalent_actions(actions, row_number, column_number):
     result = []
     subresult = []
