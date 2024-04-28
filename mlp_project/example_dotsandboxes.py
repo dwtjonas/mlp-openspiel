@@ -4,7 +4,7 @@ import dots_and_boxes_example as dab
 import time
 import numpy as np
 states_dict = {}
-num_rows, num_cols = 2,3  # Number of squares
+num_rows, num_cols = 3,3  # Number of squares
 
 
 
@@ -93,23 +93,11 @@ def _minimax(state, maximizing_player_id):
     """
     current_score1, current_score2 = get_current_score(state.__str__())
     state_key = state.dbn_string() + str(current_score1) + str(current_score2)
-<<<<<<< HEAD
- 
-    
-
-    if state.is_terminal():
-=======
->>>>>>> c0e29fb6d600ec1862260215a7300cea755378c2
 
     if state.is_terminal():
         return state.player_return(maximizing_player_id)
 
     if state_key in states_dict.keys():
-<<<<<<< HEAD
-    
-     
-=======
->>>>>>> c0e29fb6d600ec1862260215a7300cea755378c2
         return states_dict[state_key]
 
     player = state.current_player()
@@ -225,10 +213,6 @@ class Agent(pyspiel.Bot):
         return action
 
 
-<<<<<<< HEAD
-num_rows, num_cols = 2,3  # Number of squares
-=======
->>>>>>> c0e29fb6d600ec1862260215a7300cea755378c2
 game_string = (f"dots_and_boxes(num_rows={num_rows},num_cols={num_cols},"
                 "utility_margin=true)")
 game = pyspiel.load_game(game_string)
@@ -344,11 +328,7 @@ print(f"Initial state:")
 print(state)
 while not state.is_terminal():
     current_player = state.current_player()
-<<<<<<< HEAD
     
-=======
-    '''
->>>>>>> c0e29fb6d600ec1862260215a7300cea755378c2
     legal_actions = state.legal_actions()
     #rand_idx = random.randint(0, len(legal_actions) - 1)
     #action = legal_actions[rand_idx]
@@ -370,19 +350,7 @@ while not state.is_terminal():
         print(state)
 
 
-<<<<<<< HEAD
     else:
-        legal_actions = state.legal_actions()
-        #rand_idx = random.randint(0, len(legal_actions) - 1)
-        #action = legal_actions[rand_idx]
-        action = bots[current_player].step(state)
-        print("Action: " + str(action))
-        #action = current_player
-        state.apply_action(int(action))
-        print(f"Player{current_player+1}:")
-        print(state)'''
-=======
-    else:'''
     legal_actions = state.legal_actions()
     #rand_idx = random.randint(0, len(legal_actions) - 1)
     #action = legal_actions[rand_idx]
@@ -391,8 +359,7 @@ while not state.is_terminal():
     #action = current_player
     state.apply_action(int(action))
     print(f"Player{current_player+1}:")
-    print(state)
->>>>>>> c0e29fb6d600ec1862260215a7300cea755378c2
+    print(state)'''
 returns = state.returns()
 print(f"Player return values: {returns}")
 
