@@ -82,6 +82,8 @@ def main(_):
   print(get_half_open_chains(findActionsForBox(row,column),state.legal_actions()))
   print('should print all the actions to full in a closed chain')
   print(get_closed_chains(findActionsForBox(row,column),state.legal_actions()))
+  print('should print all the actions that can close in 2 boxes at once')
+  print(hard_hearted_handout(findActionsForBox(row,column),state.legal_actions()))
   print('should print all the symmetries of the current state')
   print(symmetries(taken_actions(init_actions(row,column),state.legal_actions()),row,column))
 
@@ -115,6 +117,8 @@ def main(_):
     print(get_half_open_chains(findActionsForBox(row,column),state.legal_actions()))
     print('should print all the actions to full in a closed chain')
     print(get_closed_chains(findActionsForBox(row,column),state.legal_actions()))
+    print('should print all the actions that can close in 2 boxes at once')
+    print(hard_hearted_handout(findActionsForBox(row,column),state.legal_actions()))
     print('should print all the symmetries of the current state')
     print(symmetries(taken_actions(init_actions(row,column),state.legal_actions()),row,column))
 
@@ -277,6 +281,27 @@ def get_closed_chains(box_actions,actions):
              boxes = []  # er wordt geen resultaat gevonden
       subresult = []
    return result
+
+# get the actions that can fill in 2 boxes at once
+def hard_hearted_handout(box_actions,actions):
+    result = []
+    number = 0
+    count = 0
+    for action in actions:
+        boxes = get_boxes_from_action(box_actions, action)
+        if len(boxes) == 2:
+            for element in boxes[0]:
+                if element in actions:
+                    count += 1
+                    number = element
+            count = 0
+            for element in boxes[1]:
+                if element in actions:
+                    count += 1
+            if count == 1:
+                result.append(number)
+            count = 0
+    return result
 
 # task 3 point 2 symmetries
 
