@@ -53,7 +53,7 @@ def main(_):
   games_list = pyspiel.registered_names()
   assert "dots_and_boxes" in games_list
 
-  game_string = "dots_and_boxes(num_rows=2,num_cols=2)"
+  game_string = "dots_and_boxes(num_rows=5,num_cols=5)"
   print("Creating game: {}".format(game_string))
   game = pyspiel.load_game(game_string)
 
@@ -80,8 +80,8 @@ def main(_):
   print(taken_actions(init_actions(row,column),state.legal_actions()))
   print('should print all the actions to full in a half open chain')
   print(get_half_open_chains(findActionsForBox(row,column),state.legal_actions()))
-  #print('should print all the actions to full in a closed chain')
-  #print(get_closed_chains(findActionsForBox(row,column),state.legal_actions()))
+  print('should print all the actions to full in a closed chain')
+  print(get_closed_chains(findActionsForBox(row,column),state.legal_actions()))
   print('should print all the symmetries of the current state')
   print(symmetries(taken_actions(init_actions(row,column),state.legal_actions()),row,column))
 
@@ -113,8 +113,8 @@ def main(_):
     print(taken_actions(init_actions(row,column),state.legal_actions()))
     print('should print all the actions to full in a half open chain')
     print(get_half_open_chains(findActionsForBox(row,column),state.legal_actions()))
-    #print('should print all the actions to full in a closed chain')
-    #print(get_closed_chains(findActionsForBox(row,column),state.legal_actions()))
+    print('should print all the actions to full in a closed chain')
+    print(get_closed_chains(findActionsForBox(row,column),state.legal_actions()))
     print('should print all the symmetries of the current state')
     print(symmetries(taken_actions(init_actions(row,column),state.legal_actions()),row,column))
 
@@ -235,6 +235,46 @@ def get_half_open_chains(box_actions,actions):
              boxes = [] # er wordt geen resultaat gevonden
       if (len(boxes) == 1 and len(subresult) > 2):
          result.append(subresult)
+      subresult = []
+   return result
+
+def get_closed_chains(box_actions,actions):
+   result = []
+   subresult = []
+   copy_actions = actions
+   for action_close_box in find_unique_numbers(box_actions,actions):
+      if (action_close_box not in copy_actions): # element can be removed by a chain that is not a solution
+          copy_actions.append(action_close_box)
+      copy_actions.remove(action_close_box)
+      subresult.append(action_close_box)
+      boxes = get_boxes_from_action(box_actions,action_close_box)
+      while (len(boxes) == 2):
+         flag = False
+         subcount = 0
+         for box in boxes: # check if both boxes are full
+             for element in box:
+                 if (element in copy_actions):
+                     flag = True
+         if (flag == False):
+             if (len(subresult) > 1):
+                 result.append(subresult)
+             boxes = []
+             continue
+         flag = False
+         for box in boxes:
+            for element in box:
+               if (element in copy_actions):
+                   subcount += 1
+            if (subcount == 1):
+                for element in box:
+                   if (element in copy_actions):
+                      copy_actions.remove(element)
+                      subresult.append(element)
+                      boxes = get_boxes_from_action(box_actions,element)
+                      flag = True
+            subcount = 0 # reset
+         if (not flag):
+             boxes = []  # er wordt geen resultaat gevonden
       subresult = []
    return result
 
