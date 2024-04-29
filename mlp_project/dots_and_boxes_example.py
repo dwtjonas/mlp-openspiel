@@ -84,6 +84,8 @@ def main(_):
   print(get_closed_chains(findActionsForBox(row,column),state.legal_actions()))
   print('should print all the actions that can close in 2 boxes at once')
   print(hard_hearted_handout(findActionsForBox(row,column),state.legal_actions()))
+  print('should print all the actions that can close in a 2 way open chain')
+  print(get_both_open_chains(row,column,findActionsForBox(row,column),state.legal_actions()))
   print('should print all the symmetries of the current state')
   print(symmetries(taken_actions(init_actions(row,column),state.legal_actions()),row,column))
 
@@ -119,6 +121,8 @@ def main(_):
     print(get_closed_chains(findActionsForBox(row,column),state.legal_actions()))
     print('should print all the actions that can close in 2 boxes at once')
     print(hard_hearted_handout(findActionsForBox(row,column),state.legal_actions()))
+    print('should print all the actions that can close in a 2 way open chain')
+    print(get_both_open_chains(row,column,findActionsForBox(row,column),state.legal_actions()))
     print('should print all the symmetries of the current state')
     print(symmetries(taken_actions(init_actions(row,column),state.legal_actions()),row,column))
 
@@ -302,6 +306,69 @@ def hard_hearted_handout(box_actions,actions):
                 result.append(number)
             count = 0
     return result
+
+# get numbers from the side
+def get_action_numbers_of_side(rowNumber,columNumber,box_actions):
+    result = []
+    for element in init_actions(rowNumber,columNumber):
+        if len(get_boxes_from_action(box_actions,element)) == 1:
+            result.append(element)
+    return result
+
+# get all the actions that belong to an 2 way open chain
+def get_both_open_chains(rowNumber,columnNumber,box_actions, actions):
+    sideActions = get_action_numbers_of_side(rowNumber,columnNumber,box_actions)
+    copy_actions = actions.copy()
+    count = 0
+    result = []
+    subresult = []
+    nextNumber = 0
+    for element in sideActions:
+        copy_actions = actions.copy()
+        if element not in copy_actions: # if element not in actions, we don't need to do the search
+            continue
+        if (element not in copy_actions):  # element can be removed by a chain that is not a solution
+            copy_actions.append(element)
+        copy_actions.remove(element)
+        boxes = get_boxes_from_action(box_actions,element)
+        box = boxes[0]
+        for number in box:
+            if number in copy_actions:
+                count += 1
+                nextNumber = number
+        if count == 1:
+            subresult.append(element)
+        boxes = get_boxes_from_action(box_actions, nextNumber)
+        while (len(boxes) == 2):
+            flag = False
+            subcount = 0
+            for box in boxes:
+                for element in box:
+                    if (element in copy_actions):
+                        subcount += 1
+                if (subcount == 1):
+                    for element in box:
+                        if (element in copy_actions):
+                            copy_actions.remove(element)
+                            subresult.append(element)
+                            boxes = get_boxes_from_action(box_actions, element)
+                            flag = True
+                if (subcount == 2 or subcount == 3):
+                    if (len(subresult) > 4):
+                        result.append(subresult)
+                        boxes = []
+                subcount = 0  # reset
+            if (not flag):
+                boxes = []  # er wordt geen resultaat gevonden
+        if (len(boxes) == 1 and len(subresult) > 4):
+            result.append(subresult)
+        subresult = []
+        count = 0
+    resultNoDup = []
+    for sublist in result:
+        if sublist[::-1] not in resultNoDup:
+            resultNoDup.append(sublist)
+    return resultNoDup
 
 # task 3 point 2 symmetries
 
