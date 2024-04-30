@@ -315,9 +315,42 @@ def get_action_numbers_of_side(rowNumber,columNumber,box_actions):
             result.append(element)
     return result
 
+
+def is_sublist(lst1, lst2):
+    """Controleert of lst1 een sublijst is van lst2."""
+    n = len(lst1)
+    m = len(lst2)
+
+    # Als de lengte van lst1 groter is dan lst2, kan het geen sublijst zijn
+    if n > m:
+        return False
+
+    # Zoek of lst1 een sublijst is van lst2
+    for i in range(m - n + 1):
+        if lst2[i:i + n] == lst1:
+            return True
+
+    return False
+
+def remove_sublists(lst):
+    """Verwijder sublijsten uit de lijst."""
+    result = []
+    for i in range(len(lst)):
+        sub = lst[i]
+        is_sub = False
+        # Controleer of de sublijst een subverzameling is van een andere rij in de lijst
+        for j in range(len(lst)):
+            if i != j and is_sublist(sub, lst[j]):
+                is_sub = True
+                break
+        # Voeg de sublijst toe aan het resultaat als het geen subverzameling is
+        if not is_sub:
+            result.append(sub)
+    return result
+
 # get all the actions that belong to an 2 way open chain
 def get_both_open_chains(rowNumber,columnNumber,box_actions, actions):
-    sideActions = get_action_numbers_of_side(rowNumber,columnNumber,box_actions)
+    sideActions = init_actions(rowNumber,columnNumber)#get_action_numbers_of_side(rowNumber,columnNumber,box_actions)
     copy_actions = actions.copy()
     count = 0
     result = []
@@ -354,16 +387,17 @@ def get_both_open_chains(rowNumber,columnNumber,box_actions, actions):
                             boxes = get_boxes_from_action(box_actions, element)
                             flag = True
                 if (subcount == 2 or subcount == 3):
-                    if (len(subresult) > 4):
+                    if (len(subresult) > 3):
                         result.append(subresult)
                         boxes = []
                 subcount = 0  # reset
             if (not flag):
                 boxes = []  # er wordt geen resultaat gevonden
-        if (len(boxes) == 1 and len(subresult) > 4):
+        if (len(boxes) == 1 and len(subresult) > 3):
             result.append(subresult)
         subresult = []
         count = 0
+    result = remove_sublists(result)
     resultNoDup = []
     for sublist in result:
         if sublist[::-1] not in resultNoDup:
