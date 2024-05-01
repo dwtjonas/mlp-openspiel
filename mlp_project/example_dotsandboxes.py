@@ -4,7 +4,7 @@ import dots_and_boxes_example as dab
 import time
 import numpy as np
 states_dict = {}
-num_rows, num_cols = 3,3  # Number of squares
+num_rows, num_cols = 2,2  # Number of squares
 chains_counter = 0
 
 
@@ -67,6 +67,17 @@ def get_agent_for_tournament(player_id):
     my_player = Agent(player_id)
     return my_player
 
+
+def execute_list_of_actions(state, list_of_actions):
+    if len(list_of_actions) == 0:
+        return state
+    print("state : ")
+    print(state)
+    print("list of actions: ")
+    print(list_of_actions)
+    return execute_list_of_actions(state.child(list_of_actions[0]), list_of_actions[1:])
+
+
 def _minimax_action(state, maximizing_player_id):
     player = state.current_player()
     if player == 0:
@@ -76,10 +87,13 @@ def _minimax_action(state, maximizing_player_id):
     
     chain_actions = []
     half_open_chains = dab.get_half_open_chains(dab.findActionsForBox(num_rows, num_cols), state.legal_actions())
-    for half_open_chain in half_open_chains:
+    closed_chains = dab.get_closed_chains(dab.findActionsForBox(num_rows, num_cols), state.legal_actions())
+    '''for half_open_chain in half_open_chains:
         chain_actions.append(half_open_chain)
+        print(half_open_chain)
         new_half_open_chain = half_open_chain[:]
         del new_half_open_chain[-2]
+        print(new_half_open_chain)
         chain_actions.append(new_half_open_chain)
     action_dict = {}
     if len(half_open_chains) == 0:
@@ -91,16 +105,83 @@ def _minimax_action(state, maximizing_player_id):
       
         for chain_action in chain_actions:
             new_state = execute_list_of_actions(state,chain_action)
-            action_dict[tuple(chain_action)] = _minimax(new_state, maximizing_player_id)
+            action_dict[tuple(chain_action)] = _minimax(new_state, maximizing_player_id)'''
+    
+    certain_actions_list = []
+    possible_actions_list = []
+    if len(half_open_chains) + len(closed_chains) >= 1:
+        if len(half_open_chains) >= 1:
+            
+            for closed_chain in closed_chains:
+                certain_actions_list.extend(closed_chain)
+            for half_open_chain in half_open_chains[:-1]:
+                certain_actions_list.extend(half_open_chain)
+
+            half_open_chain = half_open_chains[-1]
+            possible_actions_list.append(half_open_chain)
+            new_half_open_chain = half_open_chain[:]
+            del new_half_open_chain[-2]
+            possible_actions_list.append(new_half_open_chain)
+        else:
+            for closed_chain in closed_chains[:-1]:
+                certain_actions_list.extend(closed_chain)
+            closed_chain = closed_chains[-1]
+            possible_actions_list.append(closed_chain)
+            new_closed_chain = closed_chain[:]
+            del new_closed_chain[-2]
+            if len(new_closed_chain) >= 4:
+                del new_closed_chain[-4]
+            possible_actions_list.append(new_closed_chain)
+
+
+            
+            
+            
+
+            
+    #half_open_chain_actions = []
+    #for half_open_chain in half_open_chains:
+    #    half_open_chain_actions.append(half_open_chain)
+    #    new_half_open_chain = half_open_chain[:]
+    #    del new_half_open_chain[-2]
+    #    half_open_chain_actions.append(new_half_open_chain)
+    
+    #closed_chains_actions = []
+
+    #for closed_chain in closed_chains:
+    #    closed_chains_actions.append(closed_chain)
+    #    new_closed_chain = closed_chain[:]
+    #    del new_closed_chain[-2]
+    #    if len(new_closed_chain) >= 4:
+    #        del new_closed_chain[-4]
+    #    closed_chains_actions.append(new_closed_chain)
+
+
+    action_dict = {}
+
+    if len(half_open_chains) + len(closed_chains) == 0:
+        for action in state.legal_actions():
+            action_dict[tuple([action])] = _minimax(state.child(action), maximizing_player_id) 
+    else:
+        global chains_counter
+        chains_counter = chains_counter + 1
+    
+        print("Certain actions list: ")
+        print( certain_actions_list)
+        new_state = execute_list_of_actions(state,certain_actions_list)
+
+        for possible_action in possible_actions_list:
+            print("Possible action: ")
+            print(possible_action)
+            newer_state = execute_list_of_actions(new_state,possible_action)
+            action_dict[tuple(possible_action)]  = _minimax(newer_state, maximizing_player_id)
+    
 
     best_action = selection(action_dict, key=action_dict.get)
     return best_action
 
 
-def execute_list_of_actions(state, list_of_actions):
-    if len(list_of_actions) == 0:
-        return state
-    return execute_list_of_actions(state.child(list_of_actions[0]), list_of_actions[1:])
+
 
 
 def _minimax(state, maximizing_player_id):
@@ -131,26 +212,82 @@ def _minimax(state, maximizing_player_id):
         selection = min
 
     half_open_chains = dab.get_half_open_chains(dab.findActionsForBox(num_rows, num_cols), state.legal_actions())
+    closed_chains = dab.get_closed_chains(dab.findActionsForBox(num_rows, num_cols), state.legal_actions())
     
-    chain_actions = []
-    for half_open_chain in half_open_chains:
-        chain_actions.append(half_open_chain)
-        new_half_open_chain = half_open_chain[:]
-        del new_half_open_chain[-2]
-        chain_actions.append(new_half_open_chain)
+    certain_actions_list = []
+    possible_actions_list = []
+    if len(half_open_chains) + len(closed_chains) >= 1:
+        if len(half_open_chains) >= 1:
+            
+            for closed_chain in closed_chains:
+                certain_actions_list.extend(closed_chain)
+            for half_open_chain in half_open_chains[:-1]:
+                certain_actions_list.extend(half_open_chain)
+
+            half_open_chain = half_open_chains[-1]
+            possible_actions_list.append(half_open_chain)
+            new_half_open_chain = half_open_chain[:]
+            del new_half_open_chain[-2]
+            possible_actions_list.append(new_half_open_chain)
+        else:
+            for closed_chain in closed_chains[:-1]:
+                certain_actions_list.extend(closed_chain)
+            closed_chain = closed_chains[-1]
+            possible_actions_list.append(closed_chain)
+            new_closed_chain = closed_chain[:]
+            del new_closed_chain[-2]
+            if len(new_closed_chain) >= 4:
+                del new_closed_chain[-4]
+            possible_actions_list.append(new_closed_chain)
 
 
-    if len(half_open_chains) == 0:
+            
+            
+            
+
+            
+    #half_open_chain_actions = []
+    #for half_open_chain in half_open_chains:
+    #    half_open_chain_actions.append(half_open_chain)
+    #    new_half_open_chain = half_open_chain[:]
+    #    del new_half_open_chain[-2]
+    #    half_open_chain_actions.append(new_half_open_chain)
+    
+    #closed_chains_actions = []
+
+    #for closed_chain in closed_chains:
+    #    closed_chains_actions.append(closed_chain)
+    #    new_closed_chain = closed_chain[:]
+    #    del new_closed_chain[-2]
+    #    if len(new_closed_chain) >= 4:
+    #        del new_closed_chain[-4]
+    #    closed_chains_actions.append(new_closed_chain)
+
+
+
+
+    if len(half_open_chains) + len(closed_chains) == 0:
         values_children = [_minimax(state.child(action), maximizing_player_id) for action in state.legal_actions()]
         best_val = selection(values_children)
     else:
         global chains_counter
         chains_counter = chains_counter + 1
         state_list = []
-        for i in range(len(chain_actions)):
-            state_list.append(execute_list_of_actions(state,chain_actions[i]))
-      
+        new_state = execute_list_of_actions(state,certain_actions_list)
+        for possible_action in possible_actions_list:
+            state_list.append(execute_list_of_actions(new_state,possible_action))
         values_children = [_minimax(state_list[i], maximizing_player_id) for i in range(len(state_list))]
+
+        #if len(half_open_chains) == 0:
+        #    for i in range(len(closed_chains_actions)):
+        #        state_list.append(execute_list_of_actions(state,chain_actions[i]))
+        #    values_children = [_minimax(state_list[i], maximizing_player_id) for i in range(len(state_list))]
+
+
+        #for i in range(len(chain_actions)):
+        #    state_list.append(execute_list_of_actions(state,chain_actions[i]))
+      
+        #values_children = [_minimax(state_list[i], maximizing_player_id) for i in range(len(state_list))]
     best_val = selection(values_children)
 
     #states_dict[state_key] = best_val
