@@ -5,7 +5,7 @@ import time
 import numpy as np
 states_dict = {}
 num_rows, num_cols = 3,3  # Number of squares
-
+chains_counter = 0
 
 
 '''num_rows, num_cols = 2, 2  # Number of squares
@@ -73,11 +73,35 @@ def _minimax_action(state, maximizing_player_id):
         selection = max
     else:
         selection = min
+    
+    chain_actions = []
+    half_open_chains = dab.get_half_open_chains(dab.findActionsForBox(num_rows, num_cols), state.legal_actions())
+    for half_open_chain in half_open_chains:
+        chain_actions.append(half_open_chain)
+        new_half_open_chain = half_open_chain[:]
+        del new_half_open_chain[-2]
+        chain_actions.append(new_half_open_chain)
     action_dict = {}
-    for action in state.legal_actions():
-        action_dict[action] = _minimax(state.child(action), maximizing_player_id) 
+    if len(half_open_chains) == 0:
+        for action in state.legal_actions():
+            action_dict[tuple([action])] = _minimax(state.child(action), maximizing_player_id) 
+    else:
+        global chains_counter
+        chains_counter = chains_counter + 1
+      
+        for chain_action in chain_actions:
+            new_state = execute_list_of_actions(state,chain_action)
+            action_dict[tuple(chain_action)] = _minimax(new_state, maximizing_player_id)
+
     best_action = selection(action_dict, key=action_dict.get)
     return best_action
+
+
+def execute_list_of_actions(state, list_of_actions):
+    if len(list_of_actions) == 0:
+        return state
+    return execute_list_of_actions(state.child(list_of_actions[0]), list_of_actions[1:])
+
 
 def _minimax(state, maximizing_player_id):
     """
@@ -105,8 +129,30 @@ def _minimax(state, maximizing_player_id):
         selection = max
     else:
         selection = min
-    values_children = [_minimax(state.child(action), maximizing_player_id) for action in state.legal_actions()]
+
+    half_open_chains = dab.get_half_open_chains(dab.findActionsForBox(num_rows, num_cols), state.legal_actions())
+    
+    chain_actions = []
+    for half_open_chain in half_open_chains:
+        chain_actions.append(half_open_chain)
+        new_half_open_chain = half_open_chain[:]
+        del new_half_open_chain[-2]
+        chain_actions.append(new_half_open_chain)
+
+
+    if len(half_open_chains) == 0:
+        values_children = [_minimax(state.child(action), maximizing_player_id) for action in state.legal_actions()]
+        best_val = selection(values_children)
+    else:
+        global chains_counter
+        chains_counter = chains_counter + 1
+        state_list = []
+        for i in range(len(chain_actions)):
+            state_list.append(execute_list_of_actions(state,chain_actions[i]))
+      
+        values_children = [_minimax(state_list[i], maximizing_player_id) for i in range(len(state_list))]
     best_val = selection(values_children)
+
     #states_dict[state_key] = best_val
 
     for state_key in get_symmetrical_states(state_key): 
@@ -335,7 +381,8 @@ while not state.is_terminal():
     action = bots[current_player].step(state)
     print("Action: " + str(action))
     #action = current_player
-    state.apply_action(int(action))
+    for line in action:
+        state.apply_action(int(line))
     print(f"Player{current_player+1}:")
     print(state)
     
@@ -362,6 +409,8 @@ while not state.is_terminal():
     print(state)'''
 returns = state.returns()
 print(f"Player return values: {returns}")
+print()
+print(chains_counter)
 
 
 
