@@ -53,7 +53,7 @@ def main(_):
   games_list = pyspiel.registered_names()
   assert "dots_and_boxes" in games_list
 
-  game_string = "dots_and_boxes(num_rows=2,num_cols=2)"
+  game_string = "dots_and_boxes(num_rows=5,num_cols=5)"
   print("Creating game: {}".format(game_string))
   game = pyspiel.load_game(game_string)
 
@@ -80,8 +80,12 @@ def main(_):
   print(taken_actions(init_actions(row,column),state.legal_actions()))
   print('should print all the actions to full in a half open chain')
   print(get_half_open_chains(findActionsForBox(row,column),state.legal_actions()))
-  #print('should print all the actions to full in a closed chain')
-  #print(get_closed_chains(findActionsForBox(row,column),state.legal_actions()))
+  print('should print all the actions to full in a closed chain')
+  print(get_closed_chains(findActionsForBox(row,column),state.legal_actions()))
+  print('should print all the actions that can close in 2 boxes at once')
+  print(hard_hearted_handout(findActionsForBox(row,column),state.legal_actions()))
+  print('should print all the actions that can close in a 2 way open chain')
+  print(get_both_open_chains(row,column,findActionsForBox(row,column),state.legal_actions()))
   print('should print all the symmetries of the current state')
   print(symmetries(taken_actions(init_actions(row,column),state.legal_actions()),row,column))
 
@@ -113,8 +117,12 @@ def main(_):
     print(taken_actions(init_actions(row,column),state.legal_actions()))
     print('should print all the actions to full in a half open chain')
     print(get_half_open_chains(findActionsForBox(row,column),state.legal_actions()))
-    #print('should print all the actions to full in a closed chain')
-    #print(get_closed_chains(findActionsForBox(row,column),state.legal_actions()))
+    print('should print all the actions to full in a closed chain')
+    print(get_closed_chains(findActionsForBox(row,column),state.legal_actions()))
+    print('should print all the actions that can close in 2 boxes at once')
+    print(hard_hearted_handout(findActionsForBox(row,column),state.legal_actions()))
+    print('should print all the actions that can close in a 2 way open chain')
+    print(get_both_open_chains(row,column,findActionsForBox(row,column),state.legal_actions()))
     print('should print all the symmetries of the current state')
     print(symmetries(taken_actions(init_actions(row,column),state.legal_actions()),row,column))
 
@@ -237,6 +245,164 @@ def get_half_open_chains(box_actions,actions):
          result.append(subresult)
       subresult = []
    return result
+
+def get_closed_chains(box_actions,actions):
+   result = []
+   subresult = []
+   copy_actions = actions
+   for action_close_box in find_unique_numbers(box_actions,actions):
+      if (action_close_box not in copy_actions): # element can be removed by a chain that is not a solution
+          copy_actions.append(action_close_box)
+      copy_actions.remove(action_close_box)
+      subresult.append(action_close_box)
+      boxes = get_boxes_from_action(box_actions,action_close_box)
+      while (len(boxes) == 2):
+         flag = False
+         subcount = 0
+         for box in boxes: # check if both boxes are full
+             for element in box:
+                 if (element in copy_actions):
+                     flag = True
+         if (flag == False):
+             if (len(subresult) > 1):
+                 result.append(subresult)
+             boxes = []
+             continue
+         flag = False
+         for box in boxes:
+            for element in box:
+               if (element in copy_actions):
+                   subcount += 1
+            if (subcount == 1):
+                for element in box:
+                   if (element in copy_actions):
+                      copy_actions.remove(element)
+                      subresult.append(element)
+                      boxes = get_boxes_from_action(box_actions,element)
+                      flag = True
+            subcount = 0 # reset
+         if (not flag):
+             boxes = []  # er wordt geen resultaat gevonden
+      subresult = []
+   return result
+
+# get the actions that can fill in 2 boxes at once
+def hard_hearted_handout(box_actions,actions):
+    result = []
+    number = 0
+    count = 0
+    for action in actions:
+        boxes = get_boxes_from_action(box_actions, action)
+        if len(boxes) == 2:
+            for element in boxes[0]:
+                if element in actions:
+                    count += 1
+                    number = element
+            count = 0
+            for element in boxes[1]:
+                if element in actions:
+                    count += 1
+            if count == 1:
+                result.append(number)
+            count = 0
+    return result
+
+# get numbers from the side
+def get_action_numbers_of_side(rowNumber,columNumber,box_actions):
+    result = []
+    for element in init_actions(rowNumber,columNumber):
+        if len(get_boxes_from_action(box_actions,element)) == 1:
+            result.append(element)
+    return result
+
+
+def is_sublist(lst1, lst2):
+    """Controleert of lst1 een sublijst is van lst2."""
+    n = len(lst1)
+    m = len(lst2)
+
+    # Als de lengte van lst1 groter is dan lst2, kan het geen sublijst zijn
+    if n > m:
+        return False
+
+    # Zoek of lst1 een sublijst is van lst2
+    for i in range(m - n + 1):
+        if lst2[i:i + n] == lst1:
+            return True
+
+    return False
+
+def remove_sublists(lst):
+    """Verwijder sublijsten uit de lijst."""
+    result = []
+    for i in range(len(lst)):
+        sub = lst[i]
+        is_sub = False
+        # Controleer of de sublijst een subverzameling is van een andere rij in de lijst
+        for j in range(len(lst)):
+            if i != j and is_sublist(sub, lst[j]):
+                is_sub = True
+                break
+        # Voeg de sublijst toe aan het resultaat als het geen subverzameling is
+        if not is_sub:
+            result.append(sub)
+    return result
+
+# get all the actions that belong to an 2 way open chain
+def get_both_open_chains(rowNumber,columnNumber,box_actions, actions):
+    sideActions = init_actions(rowNumber,columnNumber)#get_action_numbers_of_side(rowNumber,columnNumber,box_actions)
+    copy_actions = actions.copy()
+    count = 0
+    result = []
+    subresult = []
+    nextNumber = 0
+    for element in sideActions:
+        copy_actions = actions.copy()
+        if element not in copy_actions: # if element not in actions, we don't need to do the search
+            continue
+        if (element not in copy_actions):  # element can be removed by a chain that is not a solution
+            copy_actions.append(element)
+        copy_actions.remove(element)
+        boxes = get_boxes_from_action(box_actions,element)
+        box = boxes[0]
+        for number in box:
+            if number in copy_actions:
+                count += 1
+                nextNumber = number
+        if count == 1:
+            subresult.append(element)
+        boxes = get_boxes_from_action(box_actions, nextNumber)
+        while (len(boxes) == 2):
+            flag = False
+            subcount = 0
+            for box in boxes:
+                for element in box:
+                    if (element in copy_actions):
+                        subcount += 1
+                if (subcount == 1):
+                    for element in box:
+                        if (element in copy_actions):
+                            copy_actions.remove(element)
+                            subresult.append(element)
+                            boxes = get_boxes_from_action(box_actions, element)
+                            flag = True
+                if (subcount == 2 or subcount == 3):
+                    if (len(subresult) > 3):
+                        result.append(subresult)
+                        boxes = []
+                subcount = 0  # reset
+            if (not flag):
+                boxes = []  # er wordt geen resultaat gevonden
+        if (len(boxes) == 1 and len(subresult) > 3):
+            result.append(subresult)
+        subresult = []
+        count = 0
+    result = remove_sublists(result)
+    resultNoDup = []
+    for sublist in result:
+        if sublist[::-1] not in resultNoDup:
+            resultNoDup.append(sublist)
+    return resultNoDup
 
 # task 3 point 2 symmetries
 
