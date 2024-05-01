@@ -4,7 +4,7 @@ import dots_and_boxes_example as dab
 import time
 import numpy as np
 states_dict = {}
-num_rows, num_cols = 3,3  # Number of squares
+num_rows, num_cols = 2,2  # Number of squares
 
 
 

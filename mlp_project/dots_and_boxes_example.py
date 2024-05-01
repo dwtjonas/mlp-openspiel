@@ -53,7 +53,7 @@ def main(_):
   games_list = pyspiel.registered_names()
   assert "dots_and_boxes" in games_list
 
-  game_string = "dots_and_boxes(num_rows=5,num_cols=5)"
+  game_string = "dots_and_boxes(num_rows=3,num_cols=3)"
   print("Creating game: {}".format(game_string))
   game = pyspiel.load_game(game_string)
 
