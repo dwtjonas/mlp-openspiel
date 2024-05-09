@@ -2,8 +2,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Definieer matrices A en B
-A = np.array([[3, 0], [0, 2]])  # Payoff matrix voor speler 1 battle of the sexes
-B = np.array([[2, 0], [0, 3]])  # Payoff matrix voor speler 2 battle of the sexes
+A = np.array([[-1, -4], [0, -3]])  # Payoff matrix voor speler 1 Prisonners dilemma
+B = np.array([[-1, 0], [-4, -3]])  # Payoff matrix voor speler 2 Prisonners dilemma
+
+# Definieer matrices A en B
+#A = np.array([[12, 0], [11, 10]])  # Payoff matrix voor speler 1 Subsidy Game
+#B = np.array([[12, 11], [0, 10]])  # Payoff matrix voor speler 2 Subsidy Game
+
+# Definieer matrices A en B
+#A = np.array([[3, 0], [0, 2]])  # Payoff matrix voor speler 1 battle of the sexes
+#B = np.array([[2, 0], [0, 3]])  # Payoff matrix voor speler 2 battle of the sexes
+
+
 
 # Definieer de differentiaalvergelijkingen voor x1 en y1
 def dx1_dt(x, y):
@@ -26,13 +36,13 @@ def epsilon_greedy(Q, epsilon):
 
 def lenient_boltzmann(Q, tau):
     probs = np.exp(Q / tau) / np.sum(np.exp(Q / tau))
-    return np.random.choice(2, p=probs)
+    return np.random.choice(2, p=probs) # dimension 2
 
 def learn(Q, start_point, alpha, beta, epsilon, tau, iterations=1000):
     traj = [start_point]
     for _ in range(iterations):
         x, y = traj[-1]
-        action = epsilon_greedy(Q,epsilon)#lenient_boltzmann(Q, tau)
+        action = epsilon_greedy(Q,epsilon) # lenient_boltzmann(Q, tau) # swap to other trajectory
         if action == 0:  # player 1 cooperates
             x_next = x + alpha * dx1_dt([x, 1 - x], [y, 1 - y])
             y_next = y + beta * dy1_dt([x, 1 - x], [y, 1 - y])
@@ -78,9 +88,9 @@ for start_point in trajectories:
     plt.plot(traj_x, traj_y, color='red', linestyle='dashed', linewidth=2)
 
 # battle of the sexes
-plt.xlabel('player 1, probability of going to the Opera')
-plt.ylabel('player 2, probability of going to the Opera')
-plt.title('Directional filed plot: Battle of the Sexes')
+plt.xlabel('player 1, probability of playing Cooperation') # change label when other matrix game is used
+plt.ylabel('player 2, probability of playing Cooperation') # change label when other matrix game is used
+plt.title('Directional filed plot: Prisoners Dilemma') # change label when other label game is used
 plt.xlim(0, 1)
 plt.ylim(0, 1)
 plt.grid(True)
