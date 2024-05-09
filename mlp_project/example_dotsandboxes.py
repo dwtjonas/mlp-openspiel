@@ -1,6 +1,6 @@
 import random
 import pyspiel
-import dots_and_boxes_example as dab
+import auxiliary_functions_task3 as dab # import dots_and_boxes_example as dab
 import time
 import numpy as np
 states_dict = {}
