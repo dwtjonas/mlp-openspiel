@@ -71,12 +71,12 @@ flags.DEFINE_string("az_path", "./7x7new/checkpoint--1",
                     "Path to an alpha_zero checkpoint. Needed by an az player.")
 flags.DEFINE_string("az_path2", "./woutcheckpoints/checkpoint--1",
                     "Path to an alpha_zero checkpoint. Needed by an az player.")
-flags.DEFINE_integer("uct_c", 1, "UCT's exploration constant.")
-flags.DEFINE_integer("rollout_count", 10, "How many rollouts to do.")
-flags.DEFINE_integer("max_simulations", 20, "How many simulations to run.")
-flags.DEFINE_integer("num_games", 20, "How many games to play.")
+flags.DEFINE_integer("uct_c", 0, "UCT's exploration constant.")
+flags.DEFINE_integer("rollout_count", 5, "How many rollouts to do.")
+flags.DEFINE_integer("max_simulations", 10, "How many simulations to run.")
+flags.DEFINE_integer("num_games", 25, "How many games to play.")
 flags.DEFINE_integer("seed", None, "Seed for the random number generator.")
-flags.DEFINE_bool("random_first", True, "Play the first move randomly.")
+flags.DEFINE_bool("random_first", False, "Play the first move randomly.")
 flags.DEFINE_bool("solve", True, "Whether to use MCTS-Solver.")
 flags.DEFINE_bool("quiet", False, "Don't show the moves as they're played.")
 flags.DEFINE_bool("verbose", False, "Show the MCTS stats of possible moves.")
@@ -94,100 +94,8 @@ def get_current_score(observation_string):
     return score_for_one, score_for_two
 
 class WoutEvaluator:
-  """A simple evaluator doing random rollouts.
-
-  This evaluator returns the average outcome of playing random actions from the
-  given state until the end of the game.  n_rollouts is the number of random
-  outcomes to be considered.
-  """
-
-  def __init__(self, n_rollouts=1, random_state=None):
-    self.n_rollouts = n_rollouts
-    self._random_state = random_state
-
-  def evaluate(self, state):
-    """Returns evaluation on given state."""
-    result = None
-    for _ in range(self.n_rollouts):
-      working_state = state.clone()
-      working_state_string = state.dbn_string()
-      while not working_state.is_terminal():
-        if working_state.is_chance_node():
-          outcomes = working_state.chance_outcomes()
-          action_list, prob_list = zip(*outcomes)
-          action = self._random_state.choice(action_list, p=prob_list)
-        #elif working_state_string.count('0') < 3:
-        #  action = _minimax_action(state, state.current_player())
-        else:
-
-          action = self.pick_heuristic_action(working_state, working_state.legal_actions())
-        working_state.apply_action(action)
-      returns = np.array(working_state.returns())
-      result = returns if result is None else result + returns
-
-    return result / self.n_rollouts
-
-  def prior(self, state):
-    """Returns equal probability for all actions."""
-    legal_actions = state.legal_actions(state.current_player())
-    return [(action, 1.0 / len(legal_actions)) for action in legal_actions]
+    pass
     
-
-  def pick_heuristic_action(self, state, actions):
-    current_player = state.current_player()
-    normal_actions = []
-    priority_actions = []
-    player_one_score, player_two_score = get_current_score(str(state))
-    for action in actions:
-      working_state = state.clone()
-      working_state.apply_action(action)
-      new_player_one_score, new_player_two_score = get_current_score(str(working_state))
-      if current_player == 0:
-        if new_player_one_score > player_one_score:
-          priority_actions.append(action)
-        elif new_player_two_score == player_two_score:
-          normal_actions.append(action)
-      else:
-        if new_player_two_score > player_two_score:
-          priority_actions.append(action)
-        elif new_player_one_score == player_one_score:
-          normal_actions.append(action)
-    if len(priority_actions) == 0:
-      return random.choice(normal_actions)
-    else:
-      return random.choice(priority_actions)
-    
-
-class DotsAndBoxesEvaluator():
-  def __init__(self, n_rollouts=100, random_state=None):
-      self.n_rollouts = n_rollouts
-      self._random_state = random_state or np.random.RandomState()
-
-  def evaluate(self, state):
-      """Returns evaluation on given state."""
-      total_score = 0
-      for _ in range(self.n_rollouts):
-          score = self.simulate_game((state.clone()))
-          total_score += score
-      return total_score / self.n_rollouts
-
-  def simulate_game(self, state):
-      """Simulates a random game from the given state and returns the score."""
-      while not state.is_terminal():
-          legal_actions = state.legal_actions()
-          action = self._random_state.choice(legal_actions)
-          state.apply_action(action)
-      return self.calculate_score(state)
-
-  def calculate_score(self, state):
-      """Calculates the score from the perspective of the first player."""
-      scores = state.scores()
-      return scores[0]  # Assuming scores[0] is the score of the first player
-
-  def prior(self, state):
-      """Returns equal probability for all legal actions."""
-      legal_actions = state.legal_actions()
-      return [(action, 1.0 / len(legal_actions)) for action in legal_actions]
   
 class OwnEvaluator:
   
@@ -215,7 +123,7 @@ class OwnEvaluator:
                 if half_open_chain[0] == three_side: break
             working_state.apply_action(three_side)
             legal_actions.remove(three_side)
-            bonus_gain += 1000
+            #bonus_gain += 10
 
         if not working_state.is_terminal():
             half_open_chains = dab.get_half_open_chains(box_actions, legal_actions[:])
@@ -224,6 +132,8 @@ class OwnEvaluator:
                 if random.random() < 0.95:
                     for half_open_chain in half_open_chains:
                         execute_list_of_actions(working_state, half_open_chain)
+                        #bonus_gain += 50
+
                 # Leave last 2
                 else:
                     half_open_chains = sorted(half_open_chains, key=len, reverse=True)
@@ -231,10 +141,17 @@ class OwnEvaluator:
                         execute_list_of_actions(working_state, half_open_chain)
                     last_half_open_chain = half_open_chains[-1][:]
                     del last_half_open_chain[-2]
-                    execute_list_of_actions(working_state, last_half_open_chain)        
+                    execute_list_of_actions(working_state, last_half_open_chain)  
+                    #bonus_gain += 10
+      
               
         if not working_state.is_terminal():
-            action = self._random_state.choice(working_state.legal_actions())
+            prefer_not_to = dab.find_actions_give_opponent_box(box_actions, legal_actions)
+            if len(prefer_not_to) == len(legal_actions):
+               action = self._random_state.choice(legal_actions)
+            else:
+               good_actions = [item for item in legal_actions if item not in prefer_not_to]
+               action = self._random_state.choice(good_actions)
             working_state.apply_action(action)
     
       returns = np.array(working_state.returns())
@@ -244,11 +161,8 @@ class OwnEvaluator:
 
   def prior(self, state):
     """Returns equal probability for all actions."""
-    if state.is_chance_node():
-      return state.chance_outcomes()
-    else:
-      legal_actions = state.legal_actions(state.current_player())
-      return [(action, 1.0 / len(legal_actions)) for action in legal_actions]
+    legal_actions = state.legal_actions(state.current_player())
+    return [(action, 1.0 / len(legal_actions)) for action in legal_actions]
     
 def execute_list_of_actions(state, list_of_actions):
     if len(list_of_actions) == 0:
